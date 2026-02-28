@@ -1,3 +1,4 @@
+import rich
 from dotenv import load_dotenv
 
 from mongoeb.core.printer import print_table, print_json, print_compact
@@ -25,7 +26,7 @@ def health_check():
 # Later create once and pass w/ context?
 
 @app.command()
-def show(collection: str, limit: int, output_format: str | None = None):
+def show(collection: str, limit: int = 1, output_format: str | None = None) -> None:
     config = load_config()
     uri = build_uri(config)
     validator.validate_collection_name(collection)
@@ -49,6 +50,18 @@ def show(collection: str, limit: int, output_format: str | None = None):
     finally:
         client.close()
 
+@app.command()
+def count(collection: str):
+    config = load_config()
+    uri = build_uri(config)
+    validator.validate_collection_name(collection)
+    client = MongoClient(uri)
+    try:
+        db = client[config.database]
+        results = db[collection].count_documents({})
+        rich.print(f"{collection} count: " ,results)
+    finally:
+        client.close()
 
 def main():
     load_dotenv()
