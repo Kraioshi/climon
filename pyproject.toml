@@ -1,0 +1,16 @@
+[project]
+name = "mongoeb"
+version = "0.1"
+description ="CLI Mongo thingie"
+dependencies = [
+    "typer",
+    "rich",
+    "pymongo",
+    "python-dotenv"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[project.scripts]
+mongoeb = "mongoeb.main:main"

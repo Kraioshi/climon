@@ -1,7 +1,7 @@
 from urllib.parse import urlencode
 
-from core.params import  get_query_params
-from core.config import Config
+from mongoeb.core.params import get_query_params
+from mongoeb.core.config import Config
 
 
 def build_uri(config: Config) -> str:
@@ -12,5 +12,3 @@ def build_uri(config: Config) -> str:
     if params:
         return f"{base}?{urlencode(params)}"
     return base
-
-

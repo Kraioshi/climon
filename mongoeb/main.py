@@ -1,14 +1,14 @@
 from dotenv import load_dotenv
 
-from core.printer import print_table, print_json, print_compact
+from mongoeb.core.printer import print_table, print_json, print_compact
 
-from core.config import load_config
+from mongoeb.core.config import load_config
 
 import typer
 from pymongo import MongoClient
 
-from core.uri import build_uri
-from core.validators import InputValidator
+from mongoeb.core.uri import build_uri
+from mongoeb.core.validators import InputValidator
 
 load_dotenv()
 
@@ -50,5 +50,10 @@ def show(collection: str, limit: int, output_format: str | None = None):
         client.close()
 
 
-if __name__ == "__main__":
+def main():
+    load_dotenv()
     app()
+
+
+if __name__ == "__main__":
+    main()
