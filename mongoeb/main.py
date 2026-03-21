@@ -1,3 +1,5 @@
+import json
+
 import rich
 from dotenv import load_dotenv
 
@@ -12,6 +14,7 @@ from mongoeb.core.uri import build_uri
 from mongoeb.core.validators import InputValidator
 
 from mongoeb.core.db import get_db
+from mongoeb.core.services.query_builder import build_query, parse_value
 
 load_dotenv()
 
@@ -69,8 +72,28 @@ def count(collection: str):
 @app.command()
 def show_collections():
     with get_db() as db:
-        results = db.list_collection_names()
+        results = list(db.list_collection_names())
         rich.print(sorted(results))
+
+
+
+## Multiple parameter support
+@app.command()
+def find(
+        collection: str,
+        filters: list[str],
+        limit: int = typer.Option(10),
+        output_format: str | None = None) -> None:
+
+    validator.validate_collection_name(collection)
+    validator.validate_filters(filters)
+    validator.validate_limit(limit)
+
+    query = build_query(filters)
+    with get_db() as db:
+        result = list(db[collection].find(query).limit(limit))
+        print_json(result)
+
 
 
 def main():
