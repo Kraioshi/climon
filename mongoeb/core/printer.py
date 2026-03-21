@@ -10,6 +10,24 @@ import datetime
 console = Console(force_terminal=True)
 
 
+def print_output(
+        docs: list[dict],
+        output_format: str | None = None,
+        collection: str | None = None,
+) -> None:
+    match output_format:
+        case "table":
+            if not collection:
+                raise ValueError("Collection is required for table format")
+            print_table(docs, collection)
+        case "compact":
+            print_compact(docs)
+        case "pretty":
+            print_json(docs)
+        case _:
+            print_json(docs)
+
+
 def print_table(docs, collection: str):
     if not docs:
         print("No documents found.")

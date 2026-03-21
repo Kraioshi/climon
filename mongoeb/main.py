@@ -1,7 +1,7 @@
 import rich
 from dotenv import load_dotenv
 
-from mongoeb.core.printer import print_table, print_json, print_compact
+from mongoeb.core.printer import print_table, print_json, print_compact, print_output
 
 from mongoeb.core.config import load_config
 
@@ -94,8 +94,7 @@ def find_one_or_many(
         else:
             result = list(db[collection].find(query).limit(limit))
 
-    print_json(result)
-
+    print_output(docs=result, output_format=output_format, collection=collection)
 
 
 def main():
