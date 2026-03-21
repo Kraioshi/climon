@@ -1,5 +1,3 @@
-import json
-
 import rich
 from dotenv import load_dotenv
 
@@ -75,14 +73,13 @@ def show_collections():
         results = list(db.list_collection_names())
         rich.print(sorted(results))
 
-
-
 ## Multiple parameter support
-@app.command()
-def find(
+@app.command("find")
+def find_one_or_many(
         collection: str,
         filters: list[str],
         limit: int = typer.Option(10),
+        one: bool = typer.Option(False, "--one"),
         output_format: str | None = None) -> None:
 
     validator.validate_collection_name(collection)
@@ -91,8 +88,13 @@ def find(
 
     query = build_query(filters)
     with get_db() as db:
-        result = list(db[collection].find(query).limit(limit))
-        print_json(result)
+        if one:
+            doc = db[collection].find_one(query)
+            result = [doc] if doc else []
+        else:
+            result = list(db[collection].find(query).limit(limit))
+
+    print_json(result)
 
 
 
