@@ -11,6 +11,8 @@ from pymongo import MongoClient
 from mongoeb.core.uri import build_uri
 from mongoeb.core.validators import InputValidator
 
+from mongoeb.core.db import get_db
+
 load_dotenv()
 
 app = typer.Typer()
@@ -62,6 +64,14 @@ def count(collection: str):
         rich.print(f"{collection} count: " ,results)
     finally:
         client.close()
+
+
+@app.command()
+def show_collections():
+    with get_db() as db:
+        results = db.list_collection_names()
+        rich.print(sorted(results))
+
 
 def main():
     load_dotenv()
