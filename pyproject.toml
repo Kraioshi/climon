@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mongoeb"
-version = "0.1"
-description ="CLI Mongo thingie"
+version = "0.1.0"
+description ="CLI Mongo thingamajig"
 dependencies = [
     "typer",
     "rich",
