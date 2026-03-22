@@ -10,8 +10,7 @@ import typer
 from mongoeb.core.validators import InputValidator
 
 from mongoeb.core.db import get_db
-from mongoeb.core.services.query_builder import build_query, build_projection
-from mongoeb.core.services.document_finder import find_documents
+from mongoeb.core.services.helpers import count_docs, show_docs, find_documents
 
 load_dotenv()
 
@@ -65,8 +64,7 @@ def show(collection: str, limit: int = 3, output_format: str | None = None) -> N
     validator.validate_collection_name(collection)
     validator.validate_limit(limit)
     with get_db() as db:
-        results = db[collection].find().limit(limit)
-        docs = list(results)
+        docs = show_docs(db=db, collection=collection, limit=limit)
 
     print_output(docs, collection, output_format)
 
@@ -79,11 +77,11 @@ def count(collection: str) -> None:
     :param collection: Name of the MongoDB collection
 
     Usage:
-        mongoeb count collection
+        mongoeb count collection_name
     """
     validator.validate_collection_name(collection)
     with get_db() as db:
-        document_count = db[collection].count_documents({})
+        document_count = count_docs(db=db, collection=collection)
 
     rich.print(f"{collection} count: ", document_count)
 
@@ -146,74 +144,54 @@ def find_one_or_many(
     validator.validate_filters(filters)
     validator.validate_limit(limit)
 
-    query = build_query(filters)
-    projection = build_projection(include, exclude)
-    if no_id:
-        # prevent crash if projection is None
-        projection = projection or {}
-        projection["_id"] = 0
-
-    with get_db() as db:
-        if one:
-            doc = db[collection].find_one(query, projection)
-            result = [doc] if doc else []
-        else:
-            result = list(db[collection].find(query, projection).limit(limit))
-
-    print_output(docs=result, output_format=output_format, collection=collection)
-
-
-
-
-@app.command("find-them")
-def find_one_or_many_more(
-    collection: str,
-    filters: list[str],
-    include: list[str] = typer.Option(None, "--include"),
-    exclude: list[str] = typer.Option(None, "--exclude"),
-    no_id: bool = typer.Option(False, "--no-id"),
-    one: bool = typer.Option(False, "--one"),
-    limit: int = typer.Option(10),
-    output_format: str | None = None) -> None:
-
     with get_db() as db:
         result = find_documents(db, collection, filters, include, exclude, no_id, one, limit)
-    print_output(result, collection, output_format)
+    print_output(docs=result, output_format=output_format, collection=collection)
 
 
 @app.command("shell")
 def shell():
     with get_db() as db:
         while True:
-            cmd = input("mongoeb > ")
+            try:
+                cmd = input("mongoeb > ")
 
-            if cmd in ["exit", "quit", "zaebal"]:
-                break
+                if cmd in ["exit", "quit", "zaebal"]:
+                    break
 
-            # Temporary naive parsing
-            parts = shlex.split(cmd)
-            print(parts)
-            if not parts:
-                continue
+                # Temporary naive parsing
+                parts = shlex.split(cmd)
+                print(parts)
+                if not parts:
+                    continue
 
-            if parts[0] == "show":
-                collection = parts[1]
-                docs = list(db[collection].find().limit(3))
-                print_output(docs, collection)
+                result = handle_commands(db, parts)
+                print_output(result)
 
-            if parts[0] == "count":
-                collection = parts[1]
-                document_count = db[collection].count_documents({})
-                rich.print(f"{collection} count: ", document_count)
+            except Exception as e:
+                rich.print(f"[red]Error:[/red] {e}")
 
-            if parts[0] == "find":
-                collection = parts[1]
-                filters = parts[2:]
 
-                result = find_documents(db, collection, filters)
-                print(result)
-                print_output(docs=result, collection=collection)
+def handle_commands(db, parts: list):
+    cmd = parts[0]
 
+    if cmd == "count":
+        if len(parts) < 2:
+            raise ValueError("Missing collection name")
+
+        return count_docs(db, parts[1])
+
+    elif cmd == "show":
+        return show_docs(db, parts[1])
+
+    elif cmd == "show-collections":
+        return list(db.list_collection_names())
+
+    elif cmd == "find":
+        return find_documents(db, parts[1], parts[2:])
+
+    else:
+        raise ValueError(f"Unknown command: {cmd}")
 
 
 def main():
