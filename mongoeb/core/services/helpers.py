@@ -1,17 +1,16 @@
-from mongoeb.core.services.query_builder import build_projection
+from mongoeb.core.services.query_builder import build_projection, normalize_fields, parse_filters
 
 
 def find_documents(
         db,
         collection: str,
         filters: dict[str, object],
-        include=None,
-        exclude=None,
+        include: list[str] | None=None,
+        exclude: list[str] | None =None,
         no_id=False,
         one=False,
         limit=10
 ):
-    query = filters
     projection = build_projection(include, exclude)
 
     if no_id:
@@ -19,10 +18,10 @@ def find_documents(
         projection["_id"] = 0
 
     if one:
-        doc = db[collection].find_one(query, projection)
+        doc = db[collection].find_one(filters, projection)
         return [doc] if doc else []
     else:
-        return list(db[collection].find(query, projection).limit(limit))
+        return list(db[collection].find(filters, projection).limit(limit))
 
 
 def count_docs(db, collection: str) -> int:

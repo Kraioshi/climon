@@ -90,14 +90,14 @@ def count(collection: str) -> None:
 ## Multiple parameter support
 @app.command("find")
 def find_one_or_many(
-    collection: str,
-    filters: list[str] = typer.Option(None, "--filter"),
-    include: list[str] = typer.Option(None, "--include"),
-    exclude: list[str] = typer.Option(None, "--exclude"),
-    no_id: bool = typer.Option(False, "--no-id"),
-    one: bool = typer.Option(False, "--one"),
-    limit: int = typer.Option(10),
-    output_format: str | None = None) -> None:
+        collection: str,
+        filters: list[str] = typer.Option(None, "--filter"),
+        include: list[str] = typer.Option(None, "--include"),
+        exclude: list[str] = typer.Option(None, "--exclude"),
+        no_id: bool = typer.Option(False, "--no-id"),
+        one: bool = typer.Option(False, "--one"),
+        limit: int = typer.Option(10),
+        output_format: str | None = None) -> None:
     """
     Find documents in a collection using key-value filters.
 
@@ -216,12 +216,75 @@ def handle_commands(db, parts: list):
         return list(db.list_collection_names())
 
     elif cmd == "find":
-        collection = parts[1]
-        filters = parts[2]
-        return find_documents(db, collection, filters)
+        # if len(parts) < 3:
+        #     raise ValueError("Usage: find <collection> <filters>")
+
+        sections = split_sections(parts)
+
+        base = sections[0]
+
+        if len(base) < 2:
+            raise ValueError("Missing collection name")
+
+        collection = base[1]
+        raw_filters = base[2:]
+
+        filters_dict = parse_filters(raw_filters)
+
+        include = None
+        exclude = None
+        limit = 10
+        one = False
+
+        # --- MODIFIERS ---
+        for section in sections[1:]:
+            cmd = section[0]
+
+            if cmd == "include":
+                include = section[1:]
+
+            elif cmd == "exclude":
+                exclude = section[1:]
+
+            elif cmd == "limit":
+                limit = int(section[1])
+
+            elif cmd == "one":
+                one = True
+
+            else:
+                raise ValueError(f"Unknown modifier: {cmd}")
+
+        return find_documents(
+            db,
+            collection,
+            filters=filters_dict,
+            include=include,
+            exclude=exclude,
+            no_id=False,
+            one=one,
+            limit=limit,
+        )
 
     else:
         raise ValueError(f"Unknown command: {cmd}")
+
+
+def split_sections(parts: list[str]):
+    sections = []
+    current = []
+
+    for part in parts:
+        if part == "|":
+            sections.append(current)
+            current = []
+        else:
+            current.append(part)
+
+    if current:
+        sections.append(current)
+
+    return sections
 
 
 def main():
