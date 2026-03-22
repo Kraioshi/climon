@@ -1,4 +1,8 @@
+from textwrap import dedent
+
+import rich
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
 from rich.json import JSON
 from rich.text import Text
@@ -81,6 +85,42 @@ def print_compact(docs: list[dict]) -> None:
         line.append("\n")
 
         console.print(line)
+
+
+def print_shell_help():
+    content = """
+[bold yellow]Mongoeb Interactive Shell[/bold yellow]
+
+[bold]Commands:[/bold]
+  show <collection>
+  show-collections
+  count <collection>
+  find <collection> (filters)
+
+[bold]Find modifiers:[/bold]
+  include <fields>     Include only specific fields
+  exclude <fields>     Exclude fields
+  limit <number>       Limit results
+  one                  Return single document
+
+[bold]Examples:[/bold]
+    show employees
+    count employees
+    find benefit benefit_id=abc123 name="Free Will"
+    find benefit benefit_id=abc123 | include name description | limit 5
+
+[bold]Other:[/bold]
+  help                          Show help
+  zaebal / exit / quit          Exit shell
+    """
+
+    rich.print(
+        Panel.fit(
+            content,
+            title="[bold yellow]Mongoeb Shell[/bold yellow]",
+            border_style="cyan"
+        )
+    )
 
 
 def normalize(value):

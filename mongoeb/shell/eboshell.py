@@ -2,19 +2,21 @@ import shlex
 
 import rich
 
-from mongoeb.core.printer import print_output
-from mongoeb.core.validators import InputValidator
+from mongoeb.core.printer import print_output, print_shell_help
 from mongoeb.core.db import get_db
 from mongoeb.shell.command_executor import handle_commands
 
-validator = InputValidator()
-
 
 def shell():
+    """Interactive shell loop for Mongoeb."""
     with get_db() as db:
         while True:
             try:
                 cmd = input("mongoeb > ")
+
+                if cmd in ["help", "pomomongo"]:
+                    print_shell_help()
+                    continue
 
                 if cmd in ["exit", "quit", "zaebal"]:
                     break
@@ -42,3 +44,4 @@ def shell():
 
             except Exception as e:
                 rich.print(f"[red]Error:[/red] {e}")
+                rich.print(f"[orange]Type 'help' or 'pomomongo' to see available commands[/orange]")

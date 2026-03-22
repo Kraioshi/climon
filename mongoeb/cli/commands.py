@@ -5,7 +5,7 @@ from mongoeb.core.printer import print_output
 
 import typer
 
-from mongoeb.core.services.query_builder import parse_filters, normalize_fields
+from mongoeb.core.services.query_builder import parse_filters, normalize_fields, normalize_filters
 from mongoeb.core.validators import InputValidator
 
 from mongoeb.core.db import get_db
@@ -127,19 +127,19 @@ def find_one_or_many(
 
     Usage:
         # Basic
-        mongoeb find employees name Nameless
-        mongoeb find employees name Nameless age 30
-        mongoeb find employees name Nameless --limit 5
-        mongoeb find employees name Nameless --one
+        mongoeb find employees --filter name=Nameless
+        mongoeb find employees --filter name=Nameless --filter age 30
+        mongoeb find employees --filter name=Nameless --limit 5
+        mongoeb find employees --filter name=Nameless --one
 
         # Projection examples
-        mongoeb find employees name Nameless --include name age
-        mongoeb find employees name Nameless --exclude job
-        mongoeb find employees name Nameless --include name age --no-id
+        mongoeb find employees --filter name=Nameless --include name age
+        mongoeb find employees --filter name=Nameless --exclude job
+        mongoeb find employees --filter name=Nameless --include name age --no-id
 
         # Output formatting
-        mongoeb find employees name Nameless --output-format table
-        mongoeb find employees name Nameless --output-format pretty
+        mongoeb find employees --filter name=Nameless --output-format table
+        mongoeb find employees --filter name=Nameless --output-format pretty
 
     :param collection: Name of the MongoDB collection
     :param filters: Key-value pairs (must be even number of arguments)
@@ -158,11 +158,37 @@ def find_one_or_many(
     with get_db() as db:
         include_fields = normalize_fields(include)
         exclude_fields = normalize_fields(exclude)
-        filters_dict = parse_filters(filters)
+        normalized_filters = normalize_filters(filters)
+        filters_dict = parse_filters(normalized_filters)
         result = find_documents(db, collection, filters_dict, include_fields, exclude_fields, no_id, one, limit)
     print_output(docs=result, output_format=output_format, collection=collection)
 
 
 @app.command("shell")
 def shell_command():
+    """
+    Start interactive Mongoeb shell.
+
+    Allows executing MongoDB-like commands.
+
+    Available commands:
+        show <collection>
+        show-collections
+        count <collection>
+        find <collection> [filters]
+
+    Modifiers (for find):
+        include <fields>
+        exclude <fields>
+        limit <number>
+        one
+
+    Examples:
+        show employees
+        count employees
+        find benefit benefit_id=abc123 name="Free Will"
+        find benefit benefit_id=abc123 | include name description | limit 5
+
+    Type 'zaebal',  'exit' or 'quit' to leave the shell.
+    """
     shell()
