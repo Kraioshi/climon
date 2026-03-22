@@ -7,6 +7,7 @@ from mongoeb.core.printer import print_output
 
 import typer
 
+from mongoeb.core.services.query_builder import parse_filters
 from mongoeb.core.validators import InputValidator
 
 from mongoeb.core.db import get_db
@@ -90,7 +91,7 @@ def count(collection: str) -> None:
 @app.command("find")
 def find_one_or_many(
     collection: str,
-    filters: list[str],
+    filters: list[str] = typer.Option(None, "--filter"),
     include: list[str] = typer.Option(None, "--include"),
     exclude: list[str] = typer.Option(None, "--exclude"),
     no_id: bool = typer.Option(False, "--no-id"),
@@ -145,7 +146,8 @@ def find_one_or_many(
     validator.validate_limit(limit)
 
     with get_db() as db:
-        result = find_documents(db, collection, filters, include, exclude, no_id, one, limit)
+        filters_dict = parse_filters(filters)
+        result = find_documents(db, collection, filters_dict, include, exclude, no_id, one, limit)
     print_output(docs=result, output_format=output_format, collection=collection)
 
 

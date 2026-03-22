@@ -20,21 +20,46 @@ def parse_value(value: str) -> int | float | bool | datetime | str:
     :param value: Raw string value from CLI.
     :return: Parse value in appropriate Python type.
     """
-    if value.isdigit():
+    # int
+    try:
         return int(value)
+    except ValueError:
+        pass
+
+    # float
     try:
         return float(value)
     except ValueError:
         pass
+
+    # bool
     if value.lower() in ["true", "false"]:
         return value.lower() == "true"
 
+    # datetime
     try:
         return datetime.fromisoformat(value)
     except ValueError:
         pass
 
     return value
+
+def parse_filters(filters: list[str]) -> dict:
+    result = {}
+
+    if not filters:
+        return result
+
+    for f in filters:
+        if "=" not in f:
+            raise ValueError(f"Invalid filter format: {f}. Use key=value")
+
+        key, raw_value = f.split("=", 1)
+        value = parse_value(raw_value)
+
+        result[key] = value
+
+    return result
 
 
 def build_query(filters: list[str]) -> dict[str, str]:

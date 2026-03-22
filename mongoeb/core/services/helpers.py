@@ -1,17 +1,17 @@
-from mongoeb.core.services.query_builder import build_query, build_projection
+from mongoeb.core.services.query_builder import build_projection
 
 
 def find_documents(
         db,
         collection: str,
-        filters: list[str],
+        filters: dict[str, object],
         include=None,
         exclude=None,
         no_id=False,
         one=False,
         limit=10
 ):
-    query = build_query(filters)
+    query = filters
     projection = build_projection(include, exclude)
 
     if no_id:

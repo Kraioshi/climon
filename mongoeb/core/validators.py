@@ -18,8 +18,21 @@ class InputValidator:
 
 
     @staticmethod
-    def validate_filters(filters: list[str]):
+    def validate_filters(filters: list[str] | None):
         if not filters:
-            raise ValueError("Invalid filters")
-        if len(filters) % 2 != 0:
-            raise ValueError("Filters must be in key-value pairs!")
+            return
+
+        for f in filters:
+            if "=" not in f:
+                raise ValueError(
+                    f"Invalid filter '{f}'. Use key=value format (e.g. age=30)"
+                )
+
+            key, value = f.split("=", 1)
+
+            if not key:
+                raise ValueError(f"Empty filter key in '{f}'")
+
+            if not value:
+                raise ValueError(f"Empty filter value in '{f}'")
+
