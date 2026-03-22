@@ -166,7 +166,13 @@ def shell():
                     continue
 
                 result = handle_commands(db, parts)
-                print_output(result)
+
+                command = parts[0]
+                collection = parts[1]
+                if command == "count":
+                    rich.print(f"{collection} count: {result}")
+                else:
+                    print_output(result, collection)
 
             except Exception as e:
                 rich.print(f"[red]Error:[/red] {e}")
@@ -174,21 +180,22 @@ def shell():
 
 def handle_commands(db, parts: list):
     cmd = parts[0]
+    collection = parts[1]
 
     if cmd == "count":
         if len(parts) < 2:
             raise ValueError("Missing collection name")
 
-        return count_docs(db, parts[1])
+        return count_docs(db, collection)
 
     elif cmd == "show":
-        return show_docs(db, parts[1])
+        return show_docs(db, collection)
 
     elif cmd == "show-collections":
         return list(db.list_collection_names())
 
     elif cmd == "find":
-        return find_documents(db, parts[1], parts[2:])
+        return find_documents(db, collection, parts[2:])
 
     else:
         raise ValueError(f"Unknown command: {cmd}")
