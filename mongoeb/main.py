@@ -176,16 +176,22 @@ def shell():
 
                 # Temporary naive parsing
                 parts = shlex.split(cmd)
-                print(parts)
+                # print(parts)
                 if not parts:
                     continue
 
                 result = handle_commands(db, parts)
 
                 command = parts[0]
-                collection = parts[1]
                 if command == "count":
+                    collection = parts[1]
                     rich.print(f"{collection} count: {result}")
+                elif command == "show-collections":
+                    print_output(docs=result, collection="collections")
+
+                elif command in ["show", "find"]:
+                    collection = parts[1]
+                    print_output(result, collection)
                 else:
                     print_output(result, collection)
 
@@ -195,22 +201,24 @@ def shell():
 
 def handle_commands(db, parts: list):
     cmd = parts[0]
-    collection = parts[1]
 
     if cmd == "count":
         if len(parts) < 2:
             raise ValueError("Missing collection name")
-
+        collection = parts[1]
         return count_docs(db, collection)
 
     elif cmd == "show":
+        collection = parts[1]
         return show_docs(db, collection)
 
     elif cmd == "show-collections":
         return list(db.list_collection_names())
 
     elif cmd == "find":
-        return find_documents(db, collection, parts[2])
+        collection = parts[1]
+        filters = parts[2]
+        return find_documents(db, collection, filters)
 
     else:
         raise ValueError(f"Unknown command: {cmd}")
