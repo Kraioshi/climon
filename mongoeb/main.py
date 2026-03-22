@@ -7,11 +7,11 @@ from mongoeb.core.printer import print_output
 
 import typer
 
-from mongoeb.core.services.query_builder import parse_filters, normalize_fields
+from mongoeb.core.services.query_builder import parse_filters, normalize_fields, normalize_filters
 from mongoeb.core.validators import InputValidator
 
 from mongoeb.core.db import get_db
-from mongoeb.core.services.helpers import count_docs, show_docs, find_documents
+from mongoeb.core.services.helpers import count_docs, show_docs, find_documents, split_sections
 
 load_dotenv()
 
@@ -229,7 +229,8 @@ def handle_commands(db, parts: list):
         collection = base[1]
         raw_filters = base[2:]
 
-        filters_dict = parse_filters(raw_filters)
+        normalized_filters = normalize_filters(raw_filters)
+        filters_dict = parse_filters(normalized_filters)
 
         include = None
         exclude = None
@@ -241,10 +242,10 @@ def handle_commands(db, parts: list):
             cmd = section[0]
 
             if cmd == "include":
-                include = section[1:]
+                include = normalize_fields(section[1:])
 
             elif cmd == "exclude":
-                exclude = section[1:]
+                exclude = normalize_fields(section[1:])
 
             elif cmd == "limit":
                 limit = int(section[1])
@@ -269,22 +270,6 @@ def handle_commands(db, parts: list):
     else:
         raise ValueError(f"Unknown command: {cmd}")
 
-
-def split_sections(parts: list[str]):
-    sections = []
-    current = []
-
-    for part in parts:
-        if part == "|":
-            sections.append(current)
-            current = []
-        else:
-            current.append(part)
-
-    if current:
-        sections.append(current)
-
-    return sections
 
 
 def main():

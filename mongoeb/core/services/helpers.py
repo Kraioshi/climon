@@ -5,8 +5,8 @@ def find_documents(
         db,
         collection: str,
         filters: dict[str, object],
-        include: list[str] | None=None,
-        exclude: list[str] | None =None,
+        include: list[str] | None = None,
+        exclude: list[str] | None = None,
         no_id=False,
         one=False,
         limit=10
@@ -30,3 +30,20 @@ def count_docs(db, collection: str) -> int:
 
 def show_docs(db, collection: str, limit: int = 3) -> list:
     return list(db[collection].find().limit(limit))
+
+
+def split_sections(parts: list[str]):
+    sections = []
+    current = []
+
+    for part in parts:
+        if part == "|":
+            sections.append(current)
+            current = []
+        else:
+            current.append(part)
+
+    if current:
+        sections.append(current)
+
+    return sections

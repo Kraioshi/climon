@@ -46,18 +46,18 @@ def parse_value(value: str) -> int | float | bool | datetime | str:
 
 
 def parse_filters(filters: list[str]) -> dict:
+    """
+    Convert ['a=b', 'c=d'] -> {'a': 'b', 'c': 'd'}.
+    """
     result = {}
-
-    if not filters:
-        return result
 
     for f in filters:
         if "=" not in f:
-            raise ValueError(f"Invalid filter format: {f}. Use key=value")
+            raise ValueError(
+                f"Invalid filter '{f}'. Expected format: field=value"
+            )
 
-        key, raw_value = f.split("=", 1)
-        value = parse_value(raw_value)
-
+        key, value = f.split("=", 1)
         result[key] = value
 
     return result
@@ -93,6 +93,40 @@ def normalize_fields(fields: list[str] | None) -> list[str] | None:
             # SPACE SEPARATED SUPPORT
             supported = part.strip().split()
             result.extend(supported)
+
+    return result
+
+def normalize_filters(filters: list[str] | None) -> list[str]:
+    """
+    Normalize filter input into a flat list of 'field=value' strings.
+
+    Supports:
+    - CLI:
+        --filter a=b --filter c=d
+        --filter "a=b,c=d"
+
+    - Shell:
+        a=b c=d
+        "a=b c=d"
+        a=b,c=d
+    """
+
+    if not filters:
+        return []
+
+    result = []
+
+    for f in filters:
+        # split by comma first
+        parts = f.split(",")
+
+        for part in parts:
+            cleaned = part.strip()
+
+            if not cleaned:
+                continue
+
+            result.append(cleaned)
 
     return result
 
