@@ -7,7 +7,7 @@ from mongoeb.core.printer import print_output
 
 import typer
 
-from mongoeb.core.services.query_builder import parse_filters
+from mongoeb.core.services.query_builder import parse_filters, normalize_fields
 from mongoeb.core.validators import InputValidator
 
 from mongoeb.core.db import get_db
@@ -102,7 +102,7 @@ def find_one_or_many(
     Find documents in a collection using key-value filters.
 
     Filters are provided as pairs:
-        <field> <value>
+        `field` `value`
 
     Supports multiple filters (AND logic).
 
@@ -111,7 +111,18 @@ def find_one_or_many(
     - Use --exclude to exclude specific fields
     - Use --no-id to exclude the '_id' field
 
-    Important:
+    ⚠️ Field input formats.
+    Multiple input formats are supported:
+    1. Repeated flags:
+        --include company --include salary
+    2. Comma separated values:
+        --include "company, salary"
+    3. Space separated values:
+        --include "company salary"
+    4. Mixed format:
+        --include "company, salary" --include work_email
+
+    ⚠️ Important:
     - --include and --exclude can't be used together
     - MongoDB doesn't allow mixing inclusion and exclusion (except for id)
 
@@ -146,8 +157,10 @@ def find_one_or_many(
     validator.validate_limit(limit)
 
     with get_db() as db:
+        include_fields = normalize_fields(include)
+        exclude_fields = normalize_fields(exclude)
         filters_dict = parse_filters(filters)
-        result = find_documents(db, collection, filters_dict, include, exclude, no_id, one, limit)
+        result = find_documents(db, collection, filters_dict, include_fields, exclude_fields, no_id, one, limit)
     print_output(docs=result, output_format=output_format, collection=collection)
 
 
@@ -197,7 +210,7 @@ def handle_commands(db, parts: list):
         return list(db.list_collection_names())
 
     elif cmd == "find":
-        return find_documents(db, collection, parts[2:])
+        return find_documents(db, collection, parts[2])
 
     else:
         raise ValueError(f"Unknown command: {cmd}")

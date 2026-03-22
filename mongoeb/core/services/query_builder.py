@@ -44,6 +44,7 @@ def parse_value(value: str) -> int | float | bool | datetime | str:
 
     return value
 
+
 def parse_filters(filters: list[str]) -> dict:
     result = {}
 
@@ -62,33 +63,38 @@ def parse_filters(filters: list[str]) -> dict:
     return result
 
 
-def build_query(filters: list[str]) -> dict[str, str]:
+def normalize_fields(fields: list[str] | None) -> list[str] | None:
     """
-    Construct a MongoDB query dict using CLI key-value pairs
+    Normalize field input into a flat list of field names
 
-    Takes list of CLI arguments representing altering keys and values and transforms into dict.
+    Supports multiple input formats
+    1. Repeated flags:
+        --include company --include salary
+    2. Comma separated values:
+        --include "company, salary"
+    3. Space separated values:
+        --include "company salary"
+    4. Mixed format:
+        --include "company, salary" --include work_email
 
-    Example:
-        input:
-            filters = ["benefit", "Free Will", "description", "Very descriptive"]
-
-        Output:
-            {
-                "benefit": "Free Will",
-                "description": "Very descriptive"
-            }
-
-    :param filters: list of CLI
-    :return: dict representing MongoDB query
+    :param fields: Raw CLI input list
+    :return: Normalized list of fields or None
     """
-    query = {}
+    if fields is None:
+        return None
 
-    for i in range(0, len(filters), 2):
-        key = filters[i]
-        value = parse_value(filters[i + 1])
-        query[key] = value
+    result = []
 
-    return query
+    for field in fields:
+        # COMMA SEPARATED SUPPORT
+        parts = field.split(",")
+
+        for part in parts:
+            # SPACE SEPARATED SUPPORT
+            supported = part.strip().split()
+            result.extend(supported)
+
+    return result
 
 
 def build_projection(include: list[str] | None, exclude: list[str] | None) -> dict[str, int] | None:
@@ -129,3 +135,31 @@ def build_projection(include: list[str] | None, exclude: list[str] | None) -> di
         return projection
 
     return None
+
+# def build_query(filters: list[str]) -> dict[str, str]:
+#     """
+#     Construct a MongoDB query dict using CLI key-value pairs
+#
+#     Takes list of CLI arguments representing altering keys and values and transforms into dict.
+#
+#     Example:
+#         input:
+#             filters = ["benefit", "Free Will", "description", "Very descriptive"]
+#
+#         Output:
+#             {
+#                 "benefit": "Free Will",
+#                 "description": "Very descriptive"
+#             }
+#
+#     :param filters: list of CLI
+#     :return: dict representing MongoDB query
+#     """
+#     query = {}
+#
+#     for i in range(0, len(filters), 2):
+#         key = filters[i]
+#         value = parse_value(filters[i + 1])
+#         query[key] = value
+#
+#     return query
