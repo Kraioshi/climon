@@ -1,3 +1,5 @@
+import shlex
+
 import rich
 from dotenv import load_dotenv
 
@@ -9,6 +11,7 @@ from mongoeb.core.validators import InputValidator
 
 from mongoeb.core.db import get_db
 from mongoeb.core.services.query_builder import build_query, build_projection
+from mongoeb.core.services.document_finder import find_documents
 
 load_dotenv()
 
@@ -158,6 +161,59 @@ def find_one_or_many(
             result = list(db[collection].find(query, projection).limit(limit))
 
     print_output(docs=result, output_format=output_format, collection=collection)
+
+
+
+
+@app.command("find-them")
+def find_one_or_many_more(
+    collection: str,
+    filters: list[str],
+    include: list[str] = typer.Option(None, "--include"),
+    exclude: list[str] = typer.Option(None, "--exclude"),
+    no_id: bool = typer.Option(False, "--no-id"),
+    one: bool = typer.Option(False, "--one"),
+    limit: int = typer.Option(10),
+    output_format: str | None = None) -> None:
+
+    with get_db() as db:
+        result = find_documents(db, collection, filters, include, exclude, no_id, one, limit)
+    print_output(result, collection, output_format)
+
+
+@app.command("shell")
+def shell():
+    with get_db() as db:
+        while True:
+            cmd = input("mongoeb > ")
+
+            if cmd in ["exit", "quit", "zaebal"]:
+                break
+
+            # Temporary naive parsing
+            parts = shlex.split(cmd)
+            print(parts)
+            if not parts:
+                continue
+
+            if parts[0] == "show":
+                collection = parts[1]
+                docs = list(db[collection].find().limit(3))
+                print_output(docs, collection)
+
+            if parts[0] == "count":
+                collection = parts[1]
+                document_count = db[collection].count_documents({})
+                rich.print(f"{collection} count: ", document_count)
+
+            if parts[0] == "find":
+                collection = parts[1]
+                filters = parts[2:]
+
+                result = find_documents(db, collection, filters)
+                print(result)
+                print_output(docs=result, collection=collection)
+
 
 
 def main():
