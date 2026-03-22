@@ -66,41 +66,41 @@ def build_query(filters: list[str]) -> dict[str, str]:
     return query
 
 
-def build_projection(fields: list[str] | None, ignore: list[str] | None) -> dict[str, int] | None:
+def build_projection(include: list[str] | None, exclude: list[str] | None) -> dict[str, int] | None:
     """
     Build a MongoDB projection dictionary from CLI inputs.
 
     Supports:
-       1. Inclusion (--fields):
+       1. Inclusion (--include):
            ["name", "age"] -> {"name": 1, "age": 1}
 
-       2. Exclusion mode (--ignore):
+       2. Exclusion mode (--exclude):
            ["password"] -> {"password": 0}
 
     Rules:
-       - Cannot use both `fields` and `ignore` at the same time
+       - Cannot use both `include` and `exclude` at the same time
        - MongoDB doesn't allow mixing inclusion (1) and exclusion (0),
          except for the "_id" field.
 
     Behavior:
-       - If `fields` provided -> inclusion projection
-       - If `ignore` provided -> exclusion projection
+       - If `include` provided -> inclusion projection
+       - If `exclude` provided -> exclusion projection
        - If neither -> returns None (no projection)
 
-    :param fields: List of field names to include
-    :param ignore: List of field names to exclude
+    :param include: List of field names to include
+    :param exclude: List of field names to exclude
     :return: MongoDB projection dict or None
-    :raises ValueError: If both fields and ignore are provided
+    :raises ValueError: If both include and exclude are provided
     """
-    if fields and ignore:
-        raise ValueError("Can't use --fields and --ignore together!")
+    if include and exclude:
+        raise ValueError("Can't use --include and --exclude together!")
 
-    if fields:
-        projection = {field: 1 for field in fields}
+    if include:
+        projection = {included_field: 1 for included_field in include}
         return projection
 
-    if ignore:
-        projection = {ignored_field: 0 for ignored_field in ignore}
+    if exclude:
+        projection = {excluded_field: 0 for excluded_field in exclude}
         return projection
 
     return None

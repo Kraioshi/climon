@@ -90,8 +90,8 @@ def count(collection: str) -> None:
 def find_one_or_many(
     collection: str,
     filters: list[str],
-    fields: list[str] = typer.Option(None, "--fields"),
-    ignore: list[str] = typer.Option(None, "--ignore"),
+    include: list[str] = typer.Option(None, "--include"),
+    exclude: list[str] = typer.Option(None, "--exclude"),
     no_id: bool = typer.Option(False, "--no-id"),
     one: bool = typer.Option(False, "--one"),
     limit: int = typer.Option(10),
@@ -105,12 +105,12 @@ def find_one_or_many(
     Supports multiple filters (AND logic).
 
     Projection:
-    - Use --fields to include only specific fields
-    - Use --ignore to exclude specific fields
+    - Use --include to include only specific fields
+    - Use --exclude to exclude specific fields
     - Use --no-id to exclude the '_id' field
 
     Important:
-    - --fields and --ignore can't be used together
+    - --include and --exclude can't be used together
     - MongoDB doesn't allow mixing inclusion and exclusion (except for id)
 
     Usage:
@@ -121,9 +121,9 @@ def find_one_or_many(
         mongoeb find employees name Nameless --one
 
         # Projection examples
-        mongoeb find employees name Nameless --fields name age
-        mongoeb find employees name Nameless --ignore job
-        mongoeb find employees name Nameless --fields name age --no-id
+        mongoeb find employees name Nameless --include name age
+        mongoeb find employees name Nameless --exclude job
+        mongoeb find employees name Nameless --include name age --no-id
 
         # Output formatting
         mongoeb find employees name Nameless --output-format table
@@ -131,10 +131,10 @@ def find_one_or_many(
 
     :param collection: Name of the MongoDB collection
     :param filters: Key-value pairs (must be even number of arguments)
-    :param fields: Fields to include in result (inclusion projection)
-    :param ignore: Fields to exclude from result (exclusion projection)
+    :param include: Fields to include in result (inclusion projection)
+    :param exclude: Fields to exclude from result (exclusion projection)
     :param no_id: Exclude "_id" field from results
-    :param limit: Maximum number of documents to return (ignored if --one is used)
+    :param limit: Maximum number of documents to return (excluded if --one is used)
     :param one: Return only a single document (uses find_one)
     :param output_format: Output format ("pretty", "table", "compact")
     """
@@ -144,7 +144,7 @@ def find_one_or_many(
     validator.validate_limit(limit)
 
     query = build_query(filters)
-    projection = build_projection(fields, ignore)
+    projection = build_projection(include, exclude)
     if no_id:
         # prevent crash if projection is None
         projection = projection or {}
