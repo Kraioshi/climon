@@ -1,11 +1,13 @@
-from dotenv import load_dotenv
-from mongoeb.cli.commands import app
+import typer
+from mongoeb.cli.commands import app as commands_app
 
-load_dotenv()
+
+
+app = typer.Typer(help="MongoDB exploration CLI")
+app.add_typer(commands_app)
 
 
 def main():
-    load_dotenv()
     app()
 
 

@@ -8,7 +8,7 @@ def build_uri(config: Config) -> str:
     base = (f"{config.scheme}://"
             f"{config.username}:{config.password}"
             f"@{config.host}:{config.port}/{config.database}")
-    params = get_query_params()
+    params = get_query_params(config)
     if params:
         return f"{base}?{urlencode(params)}"
     return base

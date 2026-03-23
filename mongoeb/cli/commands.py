@@ -12,8 +12,6 @@ from mongoeb.core.db import get_db
 from mongoeb.core.services.helpers import count_docs, show_docs, find_documents
 from mongoeb.shell.eboshell import shell
 
-load_dotenv()
-
 app = typer.Typer()
 validator = InputValidator()
 
