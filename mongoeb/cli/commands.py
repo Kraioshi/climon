@@ -1,16 +1,15 @@
 import rich
-from dotenv import load_dotenv
-
-from mongoeb.core.printer import print_output
-
 import typer
 
+from mongoeb.core.printer import print_output
 from mongoeb.core.services.query_builder import parse_filters, normalize_fields, normalize_filters
 from mongoeb.core.validators import InputValidator
 
 from mongoeb.core.db import get_db
 from mongoeb.core.services.helpers import count_docs, show_docs, find_documents
 from mongoeb.shell.eboshell import shell
+from mongoeb.setup.run_setup import run_setup
+
 
 app = typer.Typer()
 validator = InputValidator()
@@ -26,9 +25,15 @@ def health_check():
     """
     rich.print("Mongoeb is Mongoebing!")
 
+@app.command("init")
+@app.command("gazuyem")
+def mongoeb_init():
+    """
+    Initialize mongoeb configuration
 
-# recreate config on every call atm.
-# Later create once and pass w/ context?
+    """
+    run_setup()
+
 
 @app.command("show-collections")
 def show_collections() -> None:

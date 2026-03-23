@@ -1,17 +1,28 @@
 import json
 import shutil
+import getpass
 from pathlib import Path
+import rich
+
 
 CONFIG_DIR = Path.home() / ".mongoeb"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 
 def run_setup():
-    print("Howdy! First-time setup\n")
+    if CONFIG_FILE.exists():
+        confirm = input("Config already exists. Overwrite it? (y/n): ").lower()
+        if confirm != "y":
+            print("Aborting setup.")
+            return
+    rich.print("[bold]👋[/bold]  Howdy! First-time setup\n")
+
+    CONFIG_DIR.mkdir(exist_ok=True)
+    print(f"📁  Config directory: {CONFIG_DIR}\n")
 
     database = input("Database: ")
     username = input("Username: ")
-    password = input("Password: ")
+    password = getpass.getpass("Password: ")
     host = input("Mongo host: ")
     port = input("Port: ")
 
@@ -19,10 +30,9 @@ def run_setup():
 
     options = {}
 
-    CONFIG_DIR.mkdir(exist_ok=True)
 
     if use_tls:
-        print("\n TLS setup required\n")
+        rich.print("\n[bold]🔐  TLS setup required[/bold]\n")
         print("1. Download CA file from:")
         print("   https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem\n")
         print("2. Save it somewhere")
@@ -42,7 +52,6 @@ def run_setup():
             else:
                 shutil.copy(src, dest)
                 print(f"\n Saved to: {dest}\n")
-            print(f"\n Saved to: {dest}\n")
 
             options = {
                 "retryWrites": "false",
@@ -72,3 +81,4 @@ def run_setup():
         json.dump(config, f, indent=2)
 
     print("Setup complete!")
+    rich.print(f"[bold]📄[/bold]  Config saved to: {CONFIG_FILE}")
