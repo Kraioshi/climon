@@ -2,6 +2,8 @@ import os
 from dataclasses import dataclass, field
 
 from mongoeb.config_file import load_config_file, CONFIG_FILE
+from mongoeb.setup.run_setup import run_setup
+
 
 @dataclass(frozen=True)
 class Config:
@@ -22,6 +24,9 @@ class Config:
 
 
 def load_config() -> Config:
+
+    if not CONFIG_FILE.exists():
+        run_setup()
 
     file_config = load_config_file()
     values = {
