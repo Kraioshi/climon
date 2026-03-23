@@ -10,6 +10,8 @@ from mongoeb.shell.command_executor import handle_commands
 def shell():
     """Interactive shell loop for Mongoeb."""
     with get_db() as db:
+        rich.print("[bold cyan]Mongoeb 🐚  shell[/bold cyan]")
+        rich.print("[dim]Type [bold][yellow]'help'[/yellow][/bold] to see available commands[/dim]\n")
         while True:
             try:
                 cmd = input("mongoeb > ")
