@@ -39,10 +39,16 @@ def resolve_ca_pem(path: str | None) -> str | None:
 
     p = Path(path)
 
-    if p.is_absolute():
-        return str(p)
+    if not p.is_absolute():
+        p = (CONFIG_DIR / path).resolve()
 
-    return str((CONFIG_DIR / path).resolve())
+    if not p.exists():
+        raise FileNotFoundError(
+            f"TLS CA file not found: {p}\n"
+            "Run 'mongoeb gazuyem' to configure TLS properly."
+        )
+
+    return str(p)
 
 
 def to_bool(val: str | None) -> bool:

@@ -133,7 +133,7 @@ def handle_tls() -> dict[str, str | bool] | None:
         return {
             "retryWrites": "false",
             "tls": "true",
-            "tlsCAFile": "global-bundle.pem",
+            "tlsCAFile": str(CONFIG_DIR / "global-bundle.pem"),
             "tlsAllowInvalidHostnames": "true",
             "directConnection": "true",
         }
