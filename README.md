@@ -23,7 +23,7 @@ Mongoeb allows:
 ### Option 1: pipx
 
 ```bash
-pipx install mongoeb
+pipx install git+https://github.com/Kraioshi/climon.git@v0.1.1
 ```
 
 ### Option 2: Standalone
