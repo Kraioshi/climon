@@ -4,8 +4,12 @@ on:
   push:
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
 
     steps:
       - name: Checkout repository
@@ -29,5 +33,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mongoeb-windows
+          name: mongoeb-${{ matrix.os }}
           path: dist/*
