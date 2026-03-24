@@ -26,11 +26,21 @@ Mongoeb allows:
 pipx install git+https://github.com/Kraioshi/climon.git@v0.1.1
 ```
 
-### Option 2: Standalone
+### Option 2: Standalone binary
 
-Download `.exe` from the latest version
+Download appropriate file from the releases
 
-## Setup
+### ⚠️ macOS / Linux
+After downloading, you might need to make file executable:
+```bash
+chmod +x mongoeb-*
+```
+### macOS only (if still blocked)
+```bash
+xattr -d com.apple.quarantine mongoeb-*
+```
+
+## First-time setup
 
 Run: 
 ```bash
@@ -42,3 +52,17 @@ mongoeb init
 ```
 
 And follow the prompts
+
+## Interactive shell
+
+Start the shell:
+
+```bash
+mongoeb shell
+```
+
+Then type 
+```bash
+help
+```
+to see availabl commands
