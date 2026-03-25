@@ -1,4 +1,5 @@
 from datetime import datetime
+from bson import ObjectId
 
 
 def parse_value(value: str) -> int | float | bool | datetime | str:
@@ -49,7 +50,9 @@ def parse_filters(filters: list[str]) -> dict:
     """
     Convert ['a=b', 'c=d'] -> {'a': 'b', 'c': 'd'}.
     """
-    result = {}
+    conditions = []
+
+    # result = {}
 
     for f in filters:
         if "=" not in f:
@@ -57,10 +60,18 @@ def parse_filters(filters: list[str]) -> dict:
                 f"Invalid filter '{f}'. Expected format: field=value"
             )
 
-        key, value = f.split("=", 1)
-        result[key] = value
+        key, raw_value = f.split("=", 1)
 
-    return result
+        condition = build_field_filter(key, raw_value)
+        conditions.append(condition)
+
+    if not conditions:
+        return {}
+
+    if len(conditions) == 1:
+        return conditions[0]
+
+    return {"$and": conditions}
 
 
 def normalize_fields(fields: list[str] | None) -> list[str] | None:
@@ -170,30 +181,19 @@ def build_projection(include: list[str] | None, exclude: list[str] | None) -> di
 
     return None
 
-# def build_query(filters: list[str]) -> dict[str, str]:
-#     """
-#     Construct a MongoDB query dict using CLI key-value pairs
-#
-#     Takes list of CLI arguments representing altering keys and values and transforms into dict.
-#
-#     Example:
-#         input:
-#             filters = ["benefit", "Free Will", "description", "Very descriptive"]
-#
-#         Output:
-#             {
-#                 "benefit": "Free Will",
-#                 "description": "Very descriptive"
-#             }
-#
-#     :param filters: list of CLI
-#     :return: dict representing MongoDB query
-#     """
-#     query = {}
-#
-#     for i in range(0, len(filters), 2):
-#         key = filters[i]
-#         value = parse_value(filters[i + 1])
-#         query[key] = value
-#
-#     return query
+
+def build_field_filter(key: str, value: str) -> dict:
+    """
+    Build filter for a single field.
+
+    ObjectId x string dual support.
+    Plain value fallback
+    """
+    if ObjectId.is_valid(value):
+        return {
+            "$or": [
+                {key: ObjectId(value)},
+                {key: value}
+            ]
+        }
+    return {key: value}
