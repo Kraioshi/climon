@@ -48,11 +48,47 @@ def parse_value(value: str) -> int | float | bool | datetime | str:
 
 def parse_filters(filters: list[str]) -> dict:
     """
-    Convert ['a=b', 'c=d'] -> {'a': 'b', 'c': 'd'}.
+    Parse CLI filter strings into a MongoDB query dictionary.
+
+    Each filter must use the format `field=value`.
+    Multiple filters are combined with MongoDB `$and`.
+
+    For each  filter, this function delegates value handling
+    to `build_field_filter()`.
+    That allows parsing values that look like MongoDB ObjectId.
+
+    Examples:
+        ['name=Django'] / [name='Django']
+            -> {'name': 'Django'}
+
+        ['profile_id=8805553535...']
+            -> {
+                '$or': [
+                    {'profile_id': ObjectId('8805553535...')},
+                    {'profile_id': '8805553535...'}
+                ]
+            }
+
+        ['profile_id=8805553535...', 'name=Django']
+            -> {
+                '$and': [
+                    {
+                        '$or': [
+                            {'profile_id': ObjectId('8805553535...')},
+                            {'profile_id': '8805553535...'}
+                        ]
+                    },
+                    {'name': 'Django'}
+                ]
+            }
+
+    :param filters: List of raw CLI filters such as ['name=Django', 'IQ=3'].
+    :raises ValueError: If any filter does not contain '='.
+    :return:
+        A MongoDB query dictionary ready to be passed into `find()` or
+        `find_one()`.
     """
     conditions = []
-
-    # result = {}
 
     for f in filters:
         if "=" not in f:
@@ -184,10 +220,31 @@ def build_projection(include: list[str] | None, exclude: list[str] | None) -> di
 
 def build_field_filter(key: str, value: str) -> dict:
     """
-    Build filter for a single field.
+    Build filter condition for a single field-value pair.
 
-    ObjectId x string dual support.
-    Plain value fallback
+    If the value is a valid ObjectId string, function will return a query that
+    matches both formats:
+    - BSON ObjectId
+    - Plain string
+
+    Exists, because some databases might store the same field inconsistently.
+
+    For example:
+
+    build_field_filter(key="name", value="Django")
+    -> {"name": "Django"}
+
+    build_field_filter(key="profile_id", value="8805553535abc")
+    -> {
+        '$or': [
+            {'profile_id': ObjectId('8805553535abc')},
+            {'profile_id': '8805553535abc'}
+            ]
+        }
+
+    :param key: MongoDB field name
+    :param value: raw filter value from CLI input
+    :return: MongoDB query condition for a single field
     """
     if ObjectId.is_valid(value):
         return {
