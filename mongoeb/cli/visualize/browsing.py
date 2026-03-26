@@ -7,8 +7,9 @@ import typer
 from mongoeb.core.db import get_db
 from mongoeb.core.services.helpers import count_docs, show_docs
 from mongoeb.core.validators import InputValidator
+from mongoeb.core.visualize.field_extraction import extract_fields
 from mongoeb.core.visualize.html_builders import build_html_list, build_html_count_table, build_html_collection_table, \
-    build_html_field_table
+    build_html_field_table_sorted, build_html_field_table_no_sort
 
 app = typer.Typer()
 validator = InputValidator()
@@ -77,22 +78,25 @@ def visualize_count():
 def visualize_fields(
         collection: str,
         sample_size: int = typer.Option(3, "--sample-size"),
+        sort_flag: bool = typer.Option(None, "--sort"),
 ) -> None:
     _create_temp_folder()
     html_name = f"mongoeb-{collection}-fields.html"
     file = Path(TMP_DIR) / html_name
 
-    field_map: dict[str, int] = {}
+    field_map: dict = {}
     validator.validate_collection_name(collection)
     validator.validate_limit(sample_size)
     with get_db() as db:
         docs = show_docs(db=db, collection=collection, limit=sample_size)
 
     for doc in docs:
-        _extract_fields(doc, field_map)
+        extract_fields(doc, field_map)
 
-
-    html = build_html_field_table(data=field_map, collection=collection, sample_size=sample_size)
+    if sort_flag:
+        html = build_html_field_table_sorted(data=field_map, collection=collection, sample_size=sample_size)
+    else:
+        html = build_html_field_table_no_sort(data=field_map, collection=collection, sample_size=sample_size)
     file.write_text(html, encoding="UTF-8")
     rich.print(f"[bold]📄[/bold]  File saved as: [gold3]{file}[/gold3]")
 
@@ -103,21 +107,3 @@ def _create_temp_folder():
     if not TMP_DIR.exists():
         TMP_DIR.mkdir(exist_ok=True)
         rich.print(f"[bold]📁[/bold]  Creating temp directory: [gold3]{TMP_DIR}[/gold3]\n")
-
-
-def _extract_fields(doc: dict, field_map: dict[str, int], prefix: str = "") -> None:
-    for key, value in doc.items():
-
-        field_name = f"{prefix}.{key}" if prefix else key
-
-        field_map[field_name] = field_map.get(field_name, 0) + 1
-
-        if isinstance(value, dict):
-            _extract_fields(value, field_map, field_name)
-
-        if isinstance(value, list):
-            array_field = f"{field_name}[]"
-            field_map[array_field] = field_map.get(array_field, 0) + 1
-
-            if value and isinstance(value[0], dict):
-                _extract_fields(value[0], field_map, array_field)
