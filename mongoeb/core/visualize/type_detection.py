@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bson import ObjectId
 
 
@@ -12,10 +14,12 @@ def detect_type(value) -> str:
         return "float"
     if isinstance(value, str):
         return "string"
+    if isinstance(value, datetime):
+        return "datetime"
     if isinstance(value, ObjectId):
         return "objectId"
     if isinstance(value, dict):
-        return "object"
+        return "nested object"
     if isinstance(value, list):
         return "array"
     return "unknown"
