@@ -116,7 +116,7 @@ def wrap_html(content: str) -> str:
 
                 table {{
                     border-collapse: collapse;
-                    width: 800px;
+                    width: 900px;
                     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
                     border-radius: 6px;
                     overflow: hidden;
