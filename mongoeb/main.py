@@ -1,6 +1,6 @@
 import typer
 from mongoeb.cli.commands import app as commands_app
-from mongoeb.cli.visual.browsing import app as visual_app
+from mongoeb.cli.visualize.browsing import app as visual_app
 
 app = typer.Typer(help="MongoDB exploration CLI")
 
