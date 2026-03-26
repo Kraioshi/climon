@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+
 def build_html_list(data: list[str]) -> str:
     items = ''.join(f"<li>{entry}</li>" for entry in data)
 
@@ -42,9 +45,9 @@ def build_html_count_table(data: dict[str, int]) -> str:
     return wrap_html(content)
 
 def build_html_field_table(data: dict[str, int], collection: str, sample_size: int) -> str:
-
+    exp = Decimal('0.01')
     rows = ''.join(
-        f"<tr><td>{field}</td><td>{int(count/sample_size) * 100}%</td></tr>"
+        f"<tr><td>{field}</td><td>{Decimal(count/sample_size).quantize(exp)}</td></tr>"
         for field, count in data.items()
     )
 
@@ -54,7 +57,7 @@ def build_html_field_table(data: dict[str, int], collection: str, sample_size: i
     <table>
         <tr>
             <th>Field name</th>
-            <th>Occurrence percentage</th>
+            <th>Occurrence rate</th>
         </tr>
         {rows}
     </table>
