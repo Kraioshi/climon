@@ -41,6 +41,27 @@ def build_html_count_table(data: dict[str, int]) -> str:
 
     return wrap_html(content)
 
+def build_html_field_table(data: dict[str, int], collection: str, sample_size: int) -> str:
+
+    rows = ''.join(
+        f"<tr><td>{field}</td><td>{int(count/sample_size) * 100}%</td></tr>"
+        for field, count in data.items()
+    )
+
+    content = f"""
+    <h2>Collection: {collection}</h2>
+    <h2>Sample size: {sample_size}</h2>
+    <table>
+        <tr>
+            <th>Field name</th>
+            <th>Occurrence percentage</th>
+        </tr>
+        {rows}
+    </table>
+    """
+
+    return wrap_html(content)
+
 
 def wrap_html(content: str) -> str:
     return f"""
