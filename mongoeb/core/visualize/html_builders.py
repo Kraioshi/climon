@@ -1,7 +1,49 @@
 def build_html_list(data: list[str]) -> str:
     items = ''.join(f"<li>{entry}</li>" for entry in data)
 
-    html_str = f"""
+    content = f"""
+    <h2>Collections</h2>
+    <ul>
+        {items}
+    </ul>
+    """
+    return wrap_html(content)
+
+def build_html_collection_table(data: list[str]) -> str:
+    rows = ''.join(f"<tr><td>{entry}</td></tr>" for entry in data)
+
+    content = f"""
+    <table>
+        <tr>
+            <th>Collections</th>
+        </tr>
+        {rows}
+    </table>
+    """
+
+    return wrap_html(content)
+
+def build_html_count_table(data: dict[str, int]) -> str:
+    rows = ''.join(
+        f"<tr><td>{collection}</td><td>{count}</td></tr>"
+        for collection, count in data.items()
+    )
+
+    content = f"""
+    <table>
+        <tr>
+            <th>Collections</th>
+            <th>Count</th>
+        </tr>
+        {rows}
+    </table>
+    """
+
+    return wrap_html(content)
+
+
+def wrap_html(content: str) -> str:
+    return f"""
     <html>
         <head>
             <style>
@@ -10,8 +52,26 @@ def build_html_list(data: list[str]) -> str:
                     padding: 20px;
                 }}
 
-                h2 {{
-                    margin-bottom: 10px;
+                table {{
+                    border-collapse: collapse;
+                    width: 300px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    border-radius: 6px;
+                    overflow: hidden;
+                }}
+
+                th, td {{
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                }}
+
+                th {{
+                    background-color: #f4f4f4;
+                    text-align: left;
+                }}
+
+                tr:hover {{
+                    background-color: #f1f1f1;
                 }}
 
                 ul {{
@@ -41,101 +101,7 @@ def build_html_list(data: list[str]) -> str:
             </style>
         </head>
         <body>
-            <h2>Collections</h2>
-            <ul>
-                {items}
-            </ul>
+            {content}
         </body>
     </html>
     """
-    return html_str
-
-def build_html_collection_table(data: list[str]) -> str:
-    rows = ''.join(f"<tr><td>{entry}</td></tr>" for entry in data)
-    html_str = f"""
-        <html>
-            <head>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        padding: 20px;
-                    }}
-                    table {{
-                        border-collapse: collapse;
-                        width: 300px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                        border-radius: 6px;
-                        overflow: hidden;
-                    }}
-                    th, td {{
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                    }}
-                    th {{
-                        background-color: #f4f4f4;
-                        text-align: left;
-                    }}
-                    tr:hover {{
-                        background-color: #f1f1f1;
-                    }}
-                </style>
-            </head>
-            <body>
-                <table>
-                    <tr>
-                        <th>Collections</th>
-                    </tr>
-                    {rows}
-                </table>
-            </body>
-        </html>
-    """
-    return html_str
-
-
-def build_html_count_table(data: dict[str, int]) -> str:
-    rows = ''.join(
-        f"<tr><td>{collection}</td><td>{count}</td></tr>"
-        for collection, count in data.items()
-    )
-
-    html_str = f"""
-        <html>
-            <head>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        padding: 20px;
-                    }}
-                    table {{
-                        border-collapse: collapse;
-                        width: 300px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                        border-radius: 6px;
-                        overflow: hidden;
-                    }}
-                    th, td {{
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                    }}
-                    th {{
-                        background-color: #f4f4f4;
-                        text-align: left;
-                    }}
-                    tr:hover {{
-                        background-color: #f1f1f1;
-                    }}
-                </style>
-            </head>
-            <body>
-                <table>
-                    <tr>
-                        <th>Collections</th>
-                        <th>Count</th>
-                    </tr>
-                    {rows}
-                </table>
-            </body>
-        </html>
-    """
-    return html_str
