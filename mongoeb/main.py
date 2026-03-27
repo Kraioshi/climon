@@ -12,9 +12,6 @@ app.add_typer(graph_app)
 
 
 def main():
-    print("-"*20)
-    print("LOCAL")
-    print("-"*20)
     app()
 
 

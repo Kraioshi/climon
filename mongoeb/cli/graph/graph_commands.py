@@ -13,11 +13,27 @@ validator = InputValidator()
 
 
 @app.command("graph")
-def graph(collection: str):
+def graph(
+    collection: str,
+    limit: int = typer.Option(20, "--limit")
+):
+    """
+    Generate graph visualization of a collection schema.
+
+    This command analyzes sample of documents and build a graph representing structure + nesting
+    Each top level field is connected to the collection root, nested fields are displayed hierarchically.
+
+    Result is rendered as an interactive HTML file using pyvis.
+
+    Usage:
+        mongoeb graph collection
+    :param collection: Name of mongoDB collection.
+    :param limit: sample size
+    """
     net = Network('960px', '100%', bgcolor="#222222", font_color="white")
     field_map: dict = {}
     with get_db() as db:
-        docs = show_docs(db=db, collection=collection, limit=20)
+        docs = show_docs(db=db, collection=collection, limit=limit)
 
     for doc in docs:
         extract_fields(doc, field_map)
