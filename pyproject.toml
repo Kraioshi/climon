@@ -10,7 +10,8 @@ dependencies = [
     "typer",
     "rich",
     "pymongo",
-    "python-dotenv"
+    "python-dotenv",
+    "pyvis"
 ]
 
 [tool.setuptools.packages.find]
